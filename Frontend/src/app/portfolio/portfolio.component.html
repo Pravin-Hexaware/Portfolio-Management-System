@@ -1,0 +1,153 @@
+<div class="container mt-3">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-light bg-light shadow-sm rounded px-3 mb-4">
+    <div class="container-fluid justify-content-between" style="max-width: 100%;">
+      <h3 class="m-0">Portfolio Dashboard</h3>
+      <button class="btn btn-success" (click)="toggleForm()">
+        <i class="bi bi-plus-circle"></i> Add Portfolio
+      </button>
+    </div>
+  </nav>
+
+  <!-- Add / Edit Portfolio Form -->
+  <div *ngIf="showForm" class="card card-body mb-4 shadow-sm">
+    <h4>{{ editMode ? 'Edit Portfolio' : 'Create Portfolio' }}</h4>
+    <form (ngSubmit)="savePortfolio()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Name</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedPortfolio.name" name="name" required>
+        </div>
+  
+        <!-- Type Dropdown -->  
+        <div class="col-md-6 mb-3">
+          <label>Asset Class</label>
+          <select class="form-control" [(ngModel)]="selectedPortfolio.type" [ngModelOptions]="{standalone: true}">
+            <option *ngFor="let type of types" [value]="type">{{ type }}</option>
+          </select>          
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label>Currency</label>
+          <select class="form-control" [(ngModel)]="selectedPortfolio.currency" name="currency" required>
+            <option value="" disabled selected>Select Currency</option>
+            <option *ngFor="let currency of currencies" [value]="currency">{{ currency }}</option>
+          </select>
+        </div>
+
+        <!-- Benchmark Dropdown -->
+        <div class="col-md-6 mb-3">
+          <label>Benchmark</label>
+        <select class="form-control" [(ngModel)]="selectedPortfolio.benchmark" [ngModelOptions]="{standalone: true}">
+        <option *ngFor="let benchmark of benchmarks" [value]="benchmark">{{ benchmark }}</option>
+        </select>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label>Exchange</label>
+          <select class="form-select" [(ngModel)]="selectedPortfolio.exchange" name="exchange" [ngModelOptions]="{standalone: true}">
+            <option value="" disabled selected>Select Exchange</option>
+            <option *ngFor="let exchange of exchanges" [value]="exchange">{{ exchange }}</option>
+          </select>
+        </div>
+  
+        <!-- Initial Investment -->
+        <div class="col-md-6 mb-3">
+          <label>Initial Investment</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedPortfolio.initialInvestment" name="initialInvestment"
+                 (input)="onInitialInvestmentChange()" required>
+        </div>
+  
+        <!-- Current Value (auto-filled on create) -->
+        <div class="col-md-6 mb-3">
+          <label>Current Value</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedPortfolio.currentValue" name="currentValue" [readonly]="!editMode">
+        </div>
+  
+        <div class="col-md-6 mb-3">
+          <label>Rebalancing Frequency</label>
+          <select class="form-control" [(ngModel)]="selectedPortfolio.rebalancingFrequency" [ngModelOptions]="{standalone: true}">
+            <option *ngFor="let rebalance of rebalances" [value]="rebalance">{{ rebalance }}</option>
+          </select>          
+        </div>
+        
+  
+        <!-- Theme Dropdown with ID values -->
+        <div class="col-md-6 mb-3">
+          <label>Theme</label>
+          <select class="form-control" [(ngModel)]="selectedPortfolio.theme.id" name="themeId" required>
+            <option value="" disabled selected>Select Theme</option>
+            <option *ngFor="let theme of themes" [value]="theme.id">{{ theme.name }}</option>
+          </select>
+        </div>
+  
+        <!-- Status Dropdown -->
+        <div class="col-md-6 mb-3">
+          <label>Status</label>
+          <select class="form-control" [(ngModel)]="selectedPortfolio.status" name="status" [ngModelOptions]="{standalone: true}">
+            <option value="" disabled selected>Select Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+  
+      <button type="submit" class="btn btn-primary">
+        {{ editMode ? 'Update Portfolio' : 'Save Portfolio' }}
+      </button>
+      <button type="button" class="btn btn-secondary ms-2" (click)="cancelEdit()">Cancel</button>
+    </form>
+  </div>
+  
+  <!-- Portfolio List -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h4 class="mb-3">Existing Portfolios</h4>
+      <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Currency</th>
+            <th>Theme</th>
+            <th>Initial Investment</th>
+            <th>Current Value</th>
+            <th>Status</th>
+            <th style="width: 160px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of portfolios">
+            <td class="text-center" >{{ p.name }}</td>
+            <td class="text-center">{{ p.type }}</td>
+            <td class="text-center">{{ p.currency }}</td>
+            <td class="text-center">{{ p.theme?.name || p.theme?.id }}</td>
+            <td class="text-end">{{ formatAmount(p.initialInvestment) }}</td>
+            <td class="text-end">{{ formatAmount(p.currentValue) }}</td>
+            <td class="text-center">{{ p.status }}</td>
+            <td class="text-center">
+
+              <button class="btn btn-sm btn-info me-2"
+              (click)="viewHoldings(p.id)">
+        <i class="bi bi-eye"></i>
+      </button>
+              <button class="btn btn-sm btn-warning me-2" (click)="editPortfolio(p)">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deletePortfolio(p.id)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="portfolios.length === 0">
+            <td colspan="8" class="text-center text-muted">No portfolios available</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+</div>

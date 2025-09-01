@@ -1,0 +1,14 @@
+.footer {
+    font-size: 0.85rem;
+    background-color: #212529;
+    color: #adb5bd;
+  
+    a {
+      text-decoration: none;
+      transition: color 0.2s ease-in-out;
+  
+      &:hover {
+        color: #ffffff;
+      }
+    }
+  }

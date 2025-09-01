@@ -1,0 +1,357 @@
+<div class="container mt-4" *ngIf="portfolio">
+    <!-- Portfolio Header -->
+    <div class="card mb-4 border-primary">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">{{ portfolio.name }}</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Type:</strong> {{ portfolio.type }}</p>
+            <p><strong>Currency:</strong> {{ portfolio.currency }}</p>
+            <p><strong>Benchmark:</strong> {{ portfolio.benchmark }}</p>
+            <p><strong>Exchange:</strong> {{ portfolio.exchange }}</p>
+            <p><strong>Status:</strong> {{ portfolio.status }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Initial Investment:</strong> {{ portfolio.initialInvestment | currency:portfolio.currency }}</p>
+            <p><strong>Current Value:</strong> {{ portfolio.currentValue | currency:portfolio.currency }}</p>
+            <p><strong>Rebalancing Frequency:</strong> {{ portfolio.rebalancingFrequency }}</p>
+  
+            <div *ngIf="portfolio.theme">
+              <hr />
+              <h5>Theme Details</h5>
+              <p><strong>Name:</strong> {{ portfolio.theme.name }}</p>
+              <p><strong>Description:</strong> {{ portfolio.theme.description }}</p>
+              <p><strong>Risk Level:</strong> {{ portfolio.theme.riskLevel }}</p>
+              <p><strong>Investment Horizon:</strong> {{ portfolio.theme.investmentHorizon }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Holdings Table -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="table-responsive">
+        <h4>Holdings</h4>
+        <div class="mb-3">
+          <button class="btn btn-outline-primary btn-sm me-2" (click)="sortHoldings('currentPrice')">Sort by Current Price</button>
+          <button class="btn btn-outline-primary btn-sm" (click)="sortHoldings('marketValue')">Sort by Market Value</button>
+        </div>
+        <table class="table table-bordered table-striped" *ngIf="holdings.length > 0">
+          <!-- <thead>
+            <tr>
+              <th>Security</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Value</th>
+              <th>Equity Category</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let holding of holdings">
+              <td>{{ holding.security.name }}</td>
+              <td>{{ holding.quantity }}</td>
+              <td>{{ holding.price }}</td>
+              <td>{{ holding.value }}</td>
+              <td>{{ holding.equityCategory }}</td>
+              <td>
+                <button class="btn btn-danger btn-sm" (click)="deleteHolding(holding.id!)">Delete</button>
+              </td>
+            </tr>
+          </tbody> -->
+          <thead>
+            <tr>
+              <th>Security</th>
+              <th>Quantity</th>
+              <th>Purchase Price</th>
+              <th>Current Price</th>
+              <th>Purchase Value</th>
+              <th>Market Value</th>
+              <th>Equity Category</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let holding of holdings">
+              <td>{{ holding.security?.name }}</td>
+              <td>{{ holding.quantity }}</td>
+              <td>{{ holding.price | number:'1.2-2' }}</td>
+              <td>{{ holding.currentPrice | number:'1.2-2' }}</td>
+              <td>{{ holding.value | number:'1.2-2' }}</td>
+              <!-- <td>{{ holding.marketValue | number:'1.2-2' }}</td> -->
+              <!-- <td [ngClass]="{
+                'text-success': holding.marketValue != null && holding.value != null && holding.marketValue > holding.value,
+                'text-danger': holding.marketValue != null && holding.value != null && holding.marketValue < holding.value,
+                'text-muted': holding.marketValue === holding.value
+              }">
+                {{ holding.marketValue | number:'1.2-2' }}
+              </td> -->
+              <td [ngClass]="getGainClass(holding)">
+                {{ holding.marketValue | number:'1.2-2' }}
+              </td>
+            
+              <td>{{ holding.equityCategory }}</td>
+              <td>
+                <button class="btn btn-danger btn-sm" (click)="deleteHolding(holding.id!)">Sell</button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" class="text-end"><strong>Total Market Value:</strong></td>
+              <td class="text-end">
+                {{ getTotalMarketValue() | number:'1.2-2' }}
+              </td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+
+        </table>
+        <p *ngIf="holdings.length === 0" class="text-muted">No holdings found.</p>
+      </div>
+      </div>
+    </div>
+  
+    <!-- Security Add Section (from REF code) -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="mb-3">Add New Securities to Portfolio</h5>
+    
+        <!-- Search Input -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <input
+            type="text"
+            class="form-control form-control-lg border-secondary shadow-sm"
+            placeholder="🔍 Search by Name, Symbol, or ISIN"
+            (keyup)="applyFilter($event)" />
+        </div>
+  
+        <!-- 📊 Securities Listing -->
+        <div class="table-responsive shadow-sm rounded mb-3">
+          <table class="table table-striped">
+            <thead class="table-light text-center">
+              <tr>
+                <th>Symbol</th>
+                <th>Name</th>
+                <th>Exchange</th>
+                <th>Sector</th>
+                <th>Industry</th>
+                <th>Price</th>
+                <th>Equity Category</th>
+                <th class="text-center">Quantity</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let stock of pagedSecurities">
+                <td>{{ stock.symbol }}</td>
+                <td>{{ stock.name }}</td>
+                <td>{{ stock.exchange }}</td>
+                <td>{{ stock.sector }}</td>
+                <td>{{ stock.industry }}</td>
+                <td>{{ stock.price | currency:'INR' }}</td>
+                <td>{{ stock.assetClass.subClassName }}</td>
+  
+                <!-- Quantity Input -->
+                <td class="text-center">
+                  <input
+                    type="number"
+                    class="form-control form-control-sm text-center"
+                    [(ngModel)]="stock.quantity"
+                    [min]="1"
+                    placeholder="Qty"
+                    name="qty{{stock.id}}" />
+                </td>
+  
+                <!-- Inline + / - Buttons -->
+                <td class="text-center">
+                  <div class="d-flex justify-content-center align-items-center gap-2">
+                    <button
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="decreaseQuantity(stock)"
+                      [disabled]="stock.quantity <= 1">
+                      − Remove
+                    </button>
+                    <button
+                      class="btn btn-sm btn-outline-success"
+                      (click)="increaseQuantity(stock)">
+                      + Add
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+
+          </table>
+        </div>
+    
+        <!-- Submit Button -->
+        <div class="mt-4 text-end">
+          <button class="btn btn-lg btn-success px-5" (click)="submitHolding()">
+            Submit Holdings
+          </button>
+        </div>
+      </div>
+    </div>
+  
+  
+  
+  
+  <!-- design 2 -->
+  
+  
+  <!-- 
+  
+  
+  <div class="container mt-4" *ngIf="portfolio">
+  
+    <div class="card mb-4 border-primary">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">{{ portfolio.name }}</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Type:</strong> {{ portfolio.type }}</p>
+            <p><strong>Currency:</strong> {{ portfolio.currency }}</p>
+            <p><strong>Benchmark:</strong> {{ portfolio.benchmark }}</p>
+            <p><strong>Exchange:</strong> {{ portfolio.exchange }}</p>
+            <p><strong>Status:</strong> {{ portfolio.status }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Initial Investment:</strong> {{ portfolio.initialInvestment | currency:portfolio.currency }}</p>
+            <p><strong>Current Value:</strong> {{ portfolio.currentValue | currency:portfolio.currency }}</p>
+            <p><strong>Rebalancing Frequency:</strong> {{ portfolio.rebalancingFrequency }}</p>
+  
+            <div *ngIf="portfolio.theme">
+              <hr />
+              <h5>Theme Details</h5>
+              <p><strong>Name:</strong> {{ portfolio.theme.name }}</p>
+              <p><strong>Description:</strong> {{ portfolio.theme.description }}</p>
+              <p><strong>Risk Level:</strong> {{ portfolio.theme.riskLevel }}</p>
+              <p><strong>Investment Horizon:</strong> {{ portfolio.theme.investmentHorizon }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  
+  
+  
+    <div class="card mb-4">
+      <div class="card-body">
+        <h4>Holdings</h4>
+        <table class="table table-bordered table-striped" *ngIf="holdings.length > 0">
+          <thead>
+            <tr>
+              <th>Security</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Value</th>
+              <th>Equity Category</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let holding of holdings">
+              <td>{{ holding.security.name }}</td>
+  
+              <td *ngIf="editingHoldingId !== holding.id">{{ holding.quantity }}</td>
+              <td *ngIf="editingHoldingId === holding.id">
+                <input type="number" [(ngModel)]="holdingEdits.quantity" min="0" class="form-control form-control-sm" />
+              </td>
+  
+              <td *ngIf="editingHoldingId !== holding.id">{{ holding.price }}</td>
+              <td *ngIf="editingHoldingId === holding.id">
+                <input type="number" [(ngModel)]="holdingEdits.price" min="0" step="0.01" class="form-control form-control-sm" />
+              </td>
+  
+              <td *ngIf="editingHoldingId !== holding.id">{{ holding.value }}</td>
+              <td *ngIf="editingHoldingId === holding.id">
+                <input type="number" [value]="(holdingEdits.quantity || 0) * (holdingEdits.price || 0)" disabled class="form-control form-control-sm" />
+              </td>
+  
+              <td *ngIf="editingHoldingId !== holding.id">{{ holding.equityCategory }}</td>
+              <td *ngIf="editingHoldingId === holding.id">
+                <input type="text" [(ngModel)]="holdingEdits.equityCategory" class="form-control form-control-sm" />
+              </td>
+  
+              <td>
+                <ng-container *ngIf="editingHoldingId !== holding.id; else editButtons">
+                  <button class="btn btn-warning btn-sm me-2" (click)="editHolding(holding)">Edit</button>
+                  <button class="btn btn-danger btn-sm" (click)="deleteHolding(holding.id!)">Delete</button>
+                </ng-container>
+  
+                <ng-template #editButtons>
+                  <button class="btn btn-success btn-sm me-2" (click)="saveHolding()">Save</button>
+                  <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="holdings.length === 0" class="text-muted">No holdings found.</p>
+      </div>
+    </div>
+  
+    
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="mb-3">Add New Securities to Portfolio</h5>
+        <input
+          type="text"
+          class="form-control form-control-lg border-secondary mb-3"
+          placeholder="🔍 Search by Name, Symbol, or ISIN"
+          (keyup)="applyFilter($event)"
+        />
+  
+        <div class="table-responsive mb-3" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light text-center">
+              <tr>
+                <th>Symbol</th>
+                <th>Name</th>
+                <th>Exchange</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Add</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let stock of pagedSecurities">
+                <td>{{ stock.symbol }}</td>
+                <td>{{ stock.name }}</td>
+                <td>{{ stock.exchange }}</td>
+                <td>{{ stock.price }}</td>
+                <td>
+                  <input
+                    type="number"
+                    min="0"
+                    [(ngModel)]="stock.quantity"
+                    class="form-control form-control-sm"
+                    style="width: 80px;"
+                  />
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-primary btn-sm" (click)="addToPortfolio(stock)">Add</button>
+                </td>
+              </tr>
+              <tr *ngIf="pagedSecurities.length === 0">
+                <td colspan="6" class="text-center text-muted">No securities found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  
+    <div class="d-flex justify-content-end mb-4">
+      <button class="btn btn-success" (click)="submitHolding()">Submit Holdings</button>
+    </div>
+  </div>  -->
+  

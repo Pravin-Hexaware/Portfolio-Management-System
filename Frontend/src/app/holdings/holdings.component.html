@@ -1,0 +1,117 @@
+<div class="container mt-4">
+
+  <!-- Portfolio Selection -->
+  <div class="mb-3">
+    <label>Select Portfolio:</label>
+    <select [(ngModel)]="selectedPortfolioId" (change)="getHoldings()" class="form-select">
+      <option value="">-- Select Portfolio --</option>
+      <option *ngFor="let portfolio of portfolios" [value]="portfolio.id">
+        {{ portfolio.name }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Holdings Table -->
+  <!-- <table class="table table-bordered table-striped" *ngIf="holdings.length > 0">
+    <thead>
+      <tr>
+        <th>Security</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Value</th>
+        <th>Equity Category</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let holding of holdings">
+        <td>{{ holding.security?.name }}</td>
+        <td>{{ holding.quantity }}</td>
+        <td>{{ holding.price }}</td>
+        <td>{{ holding.value }}</td>
+        <td>{{ holding.equityCategory }}</td>
+        <td>
+          <button class="btn btn-warning btn-sm me-2" (click)="editHolding(holding)">Edit</button>
+          <button class="btn btn-danger btn-sm" (click)="deleteHolding(holding.id!)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table> -->
+
+
+
+  <!-- Holdings Table -->
+<table class="table table-bordered table-striped" *ngIf="holdings.length > 0">
+  <thead>
+    <tr>
+      <th>Security</th>
+      <th>Quantity</th>
+      <th>Purchase Price</th>
+      <th>Current Price</th>
+      <th>Purchase Value</th>
+      <th>Market Value</th>
+      <th>Equity Category</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let holding of holdings">
+      <td>{{ holding.security?.name }}</td>
+      <td>{{ holding.quantity }}</td>
+      <td>{{ holding.price | number:'1.2-2' }}</td>
+      <td>{{ holding.currentPrice | number:'1.2-2' }}</td>
+      <td>{{ holding.value | number:'1.2-2' }}</td>
+      <td>{{ holding.marketValue | number:'1.2-2' }}</td>
+      <td>{{ holding.equityCategory }}</td>
+      <td>
+        
+        <button class="btn btn-warning btn-sm me-2" (click)="editHolding(holding)">Edit</button>
+        <button class="btn btn-danger btn-sm" (click)="deleteHolding(holding.id!)">Delete</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+  <!-- Add/Edit Form -->
+  <div class="card mt-4">
+    <div class="card-body">
+      <h5 class="card-title">{{ editMode ? 'Edit Holding' : 'Add Holding' }}</h5>
+
+      <div class="mb-3">
+        <label>Security:</label>
+        <select [(ngModel)]="newHolding.security.id" class="form-select">
+          <option value="">-- Select Security --</option>
+          <option *ngFor="let sec of securities" [value]="sec.id">
+            {{ sec.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label>Quantity:</label>
+        <input type="number" [(ngModel)]="newHolding.quantity" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label>Price:</label>
+        <input type="number" [(ngModel)]="newHolding.price" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label>Value:</label>
+        <input type="number" [(ngModel)]="newHolding.value" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label>Equity Category:</label>
+        <input type="text" [(ngModel)]="newHolding.equityCategory" class="form-control">
+      </div>
+
+      <button class="btn btn-primary" (click)="saveHolding()">
+        {{ editMode ? 'Update' : 'Add' }}
+      </button>
+      <button class="btn btn-secondary ms-2" (click)="resetForm()">Cancel</button>
+    </div>
+  </div>
+
+</div>

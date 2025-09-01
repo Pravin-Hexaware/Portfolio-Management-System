@@ -1,0 +1,92 @@
+/* Typography */
+.module-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .module-subtitle {
+    font-size: 1rem;
+    color: #6c757d;
+  }
+  
+  /* Table Styling */
+  .table {
+    font-size: 0.95rem;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  
+  .table-header {
+    background-color: #f4f6f8;
+    font-weight: 600;
+    color: #37474f;
+  }
+  
+  th {
+    white-space: nowrap;
+    padding: 0.75rem;
+    background-color: #f9fafb;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  td {
+    vertical-align: middle;
+    padding: 0.75rem;
+    color: #495057;
+  }
+  
+  /* Section Header */
+  .section-header {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Sort Button */
+  .sort-button {
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #cccccc;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  
+  .sort-button:hover {
+    background-color: #f8f9fa;
+    border-color: #999999;
+  }
+  
+  .sort-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+  
+  /* Floating Action Box */
+  .floating-actions {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    display: inline-flex;
+    gap: 0.5rem;
+    background-color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    transition: opacity 0.3s ease;
+  }
+  
+  /* Show actions on row hover */
+  .hover-row:hover .floating-actions {
+    display: inline-flex !important;
+  }
+  
+  /* Optional: Pointer cursor for action buttons */
+  .floating-actions button {
+    cursor: pointer;
+  }
+  
